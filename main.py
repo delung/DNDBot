@@ -7,7 +7,6 @@ from rolling import Rolling
 #from keep_alive import keep_alive
 #from database import *
 from get_gif import *
-from get_help import get_help
 
 client = discord.Client()
 howdy_gif = 'https://tenor.com/view/howdy-cowboy-woody-toy-story-shark-gif-5543642'
@@ -25,7 +24,7 @@ async def on_message(message):
 	if message.author == client.user:
 		return
 	elif message.content == '$help':
-		await message.channel.send(await get_general_help())
+		await message.channel.send(await get_general_help(message))
 	elif message.content == '$ree':
 		await message.channel.send(get_ree_gif())
 	elif message.content == '$ricardo':
@@ -48,5 +47,5 @@ if __name__ == "__main__":
 	#keep_alive()
 	req = requests.get("https://discord.com/api/v8/gateway")
 	print(req.headers)
-	#client.run(os.getenv("DISCORD_BOT_TOKEN"))
+	client.run(os.getenv("DISCORD_BOT_TOKEN"))
 	print("Exiting")

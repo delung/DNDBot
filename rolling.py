@@ -3,6 +3,7 @@ import re
 import random
 from responds import Responds
 from abc import ABC, abstractmethod
+import asyncio
 
 class Rolling(Responds):
 	
@@ -19,7 +20,12 @@ class Rolling(Responds):
 		if not help_match is None:
 			return await Rolling.get_help_message(message)
 		elif not roll_match is None:
-			num_rolls, num_sides = re.findall('[0-9]+', message.content[2:])
+			matches = re.findall('[0-9]+', message.content[2:])
+			num_rolls, num_sides = int(matches[0]), int(matches[1])
+			
+			if num_rolls > Rolling.MAX_ROLLS:
+				return await Rolling.get_usage_message(message)
+				
 			roll_total, rolls = await Rolling.roll(num_rolls, num_sides)
 			return await Rolling.__roll_to_response(roll_total, rolls)
 		else:
@@ -28,10 +34,10 @@ class Rolling(Responds):
 		return await Rolling.get_usage_message(message)
 	
 	async def get_help_message(message: discord.Message) -> discord.Embed:
-		return
+		return discord.Embed(title="temp help response")
 	
 	async def get_usage_message(message: discord.Message) -> discord.Embed:
-		return
+		return discord.Embed(title="temp usage response")
 	
 	@staticmethod
 	async def __gen_random_num(num_sides: int) -> int:
@@ -49,4 +55,4 @@ class Rolling(Responds):
 	
 	@staticmethod
 	async def __roll_to_response(roll_total: int, rolls: list) -> discord.Embed:
-		return
+		return discord.Embed(title="temp roll response")

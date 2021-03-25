@@ -14,3 +14,4 @@ class Responds(ABC):
 	
 	@abstractmethod
 	async def get_usage_message(message: discord.Message) -> discord.Embed:
+		pass
