@@ -15,7 +15,7 @@ list_of_ricardo_gifs = [
 ]
 
 def get_ree_gif():
-  return list_of_ree_gifs[random.randint(0, len(list_of_ree_gifs)-1)]
+	return list_of_ree_gifs[random.randint(0, len(list_of_ree_gifs)-1)]
 
 def get_ricardo_gif():
-  return list_of_ricardo_gifs[random.randint(0, len(list_of_ricardo_gifs)-1)]
+	return list_of_ricardo_gifs[random.randint(0, len(list_of_ricardo_gifs)-1)]
