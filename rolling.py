@@ -23,7 +23,9 @@ class Rolling(Responds):
 			matches = re.findall('[0-9]+', message.content[2:])
 			num_rolls, num_sides = int(matches[0]), int(matches[1])
 
-			if num_rolls > Rolling.MAX_ROLLS:
+			if num_rolls == 0 or num_sides == 0:
+				return await Rolling.get_usage_message(message)
+			elif num_rolls > Rolling.MAX_ROLLS:
 				return await Rolling.get_usage_message(message)
 
 			roll_total, rolls = await Rolling.roll(num_rolls, num_sides)
