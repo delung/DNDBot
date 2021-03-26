@@ -1,102 +1,102 @@
-#Static class for rolling support
-import asyncio
+import discord
 import re
 import random
+from responds import Responds
+from abc import ABC, abstractmethod
+import asyncio
 
-class Rolling:
+class Rolling(Responds):
 
-  MAX_ROLLS = 1000
-  MAX_ROLLS_TO_SHOW_INDIVIDUAL_ROLLS = 20
+	MAX_ROLLS = 1000
+	MAX_ROLLS_TO_SHOW_INDIVIDUAL_ROLLS = 20
 
-  @staticmethod
-  async def __print_usage_message(msg):
-    """
-    When incorrect usage of the roll command is done, this @s the user and tells them how to
-    get help
-    """
-    print("This is not done yet")
-    await msg.channel.send(msg.author.mention + " You messed up, but I can't help you yet")
-    return
+	async def get_response(message: discord.Message) -> discord.Embed:
+		roll_pattern = re.compile(r"\$r[1-9][0-9]*d[1-9][0-9]*$")
+		help_pattern = re.compile(r"\$r help$")
 
-  @staticmethod
-  async def __print_help(msg):
-    """
-    private helper class that prints how to use the roll command when a mistake is made
-    """
-    print("help is not coming")
-    await msg.channel.send(msg.author.mention + " Help is not coming.")
-    return
-  
-  @staticmethod
-  async def __print_formatted_rolls(rolls, roll_total, msg):
-    """
-    Takes the rolls 
-    rolls: list of ints corresponding to the numbers rolled
-    roll_total: sum of all rolls in rolls
-    msg: original message to obtain channel/username info to @ them in reply
-    """
-    if (len(rolls) == 1):
-      await msg.channel.send(msg.author.mention + " you rolled a " + str(roll_total))
-    elif (len(rolls) > Rolling.MAX_ROLLS_TO_SHOW_INDIVIDUAL_ROLLS):
-      await msg.channel.send(msg.author.mention + " you rolled a total of " + str(roll_total))
-    else:
-      await msg.channel.send(msg.author.mention + " rolls made: " + str(rolls) + "\n" \
-      " you rolled a total of " + str(roll_total))
-    return
+		roll_match = roll_pattern.match(message.content)
+		help_match = help_pattern.match(message.content)
 
-  @staticmethod
-  async def __parse_message(msg):
-    """
-    Private helper function to parse message and extract info to make rolls
-    Doc goes here
-    """
-    cmd = msg.content
-    # split string into numerics and split by continuous number
-    int_cmd = re.findall('[0-9]+', cmd[2:])
-    str_cmd = re.findall('[a-z]+', cmd[2:])
+		if not help_match is None:
+			return await Rolling.get_help_message(message)
+		elif not roll_match is None:
+			matches = re.findall('[0-9]+', message.content[2:])
+			num_rolls, num_sides = int(matches[0]), int(matches[1])
 
+			if num_rolls > Rolling.MAX_ROLLS:
+				return await Rolling.get_usage_message(message)
 
-    """
-    The following conditions must be met, or the help will be printed and nothing will ocurr
-    1. the character following $r must be a number
-    2. the text portion of the command following $r must be length 1
-    3. the text portion of the command following $r must be == "d"
-    4. there must be 2 numbers in the string following $r, separated by a d
-    5. num rolls must be < MAX_ROLLS
-    """
-    possible_errors = [
-      not cmd[2].isnumeric(),
-      len(str_cmd) != 1,
-      str_cmd[0] != 'd',
-      len(int_cmd) != 2,
-      int(int_cmd[0]) > Rolling.MAX_ROLLS
-    ]
+			roll_total, rolls = await Rolling.roll(num_rolls, num_sides)
+			return await Rolling.__roll_to_response(message, roll_total, rolls,
+													num_rolls, num_sides)
+		else:
+			return await Rolling.get_usage_message(message)
 
-    if any(possible_errors):
-      return None
+		return await Rolling.get_usage_message(message)
 
-    return int(int_cmd[0]), int(int_cmd[1])
+	async def get_help_message(message: discord.Message) -> discord.Embed:
+		emb = discord.Embed()
+		emb.title = "Help Requested by " + str(message.author.display_name)
+		emb.type = "rich"
+		emb.add_field(name="Basic Usage", value="Command syntax is \n" + \
+			"```$rXdY``` \n " + \
+			"Rolls a Y sided die X times.", inline=False)
+		emb.add_field(name="Bot Reply", value="The bot will reply to you " + \
+			"with a formatted message containing your " + \
+			"request, a list of each roll made and the total of the " + \
+			"rolls. ***Note that if you roll more than 50 dice, then only " + \
+			"the total will be shown to avoid clutter.***", inline=False)
+		emb.add_field(name="Max Rolls",
+			value="There is currently a ***maximum " + \
+			"number of rolls*** (" + str(Rolling.MAX_ROLLS) + ") that " + \
+			"can be made in one command before you will be sent usage " + \
+			"instructions", inline=False)
+		emb.colour = discord.Colour.dark_red()
+		return emb
 
-  @staticmethod
-  async def __gen_random_num(num_sides):
-    return random.randint(1,num_sides)
+	async def get_usage_message(message: discord.Message) -> discord.Embed:
+		emb = discord.Embed()
+		emb.title = "How To Use the Roll Command"
+		emb.type = "rich"
+		emb.description = message.author.mention + "\n" + \
+		 "Rolling is `$rXdY` where X is the number of dice and " + \
+		 " Y is the number of sides.\n" + \
+		 "For help on using roll properly, type `$r help`"
+		emb.add_field(name=u'\u200b',
+			value="Please note that the max number of rolls is " + \
+			str(Rolling.MAX_ROLLS), inline=False)
+		emb.colour = discord.Colour.dark_red()
+		return emb
 
-  @staticmethod
-  async def make_roll(msg):
-    """
-    Doc goes here
-    """
-    res = await Rolling.__parse_message(msg)
-    if (res is None):
-      await Rolling.__print_usage_message(msg)
-      return
+	@staticmethod
+	async def __gen_random_num(num_sides: int) -> int:
+		return random.randint(1,num_sides)
 
-    #Launch num_rolls tasks to generate a random number between 1 and num_sides
-    #Gather results into a list called "rolls"
-    num_rolls, num_sides = res[0], res[1]
-    rolls = await asyncio.gather(*(Rolling.__gen_random_num(num_sides) for n in range(num_rolls)))
-    roll_total = sum(rolls)
-    await Rolling.__print_formatted_rolls(rolls, roll_total, msg)
-    return
+	@staticmethod
+	async def roll(num_rolls: int, num_sides: int) -> (int, list):
+		"""
+		Rolls num_rolls numbers between 1 and num_sides.
+		Returns the sum of all rolls, and a list of all rolls made
+		"""
 
-  
+		rolls = await asyncio.gather(*(Rolling.__gen_random_num(num_sides)
+										for n in range(num_rolls)))
+		return sum(rolls), rolls
+
+	@staticmethod
+	async def __roll_to_response(message: discord.Message,
+		roll_total: int, rolls: list,
+		num_rolls: int, num_sides: int) -> discord.Embed:
+		"""
+		Gets an embed with roll results
+		"""
+		emb = discord.Embed()
+		plural = "s" if num_rolls > 1 else ""
+		emb.title = str(message.author.display_name) + " Rolled " + \
+			str(num_rolls) + " d" + str(num_sides) + plural
+		emb.type = "rich"
+		emb.add_field(name="ROLLS:", value=str(rolls)[1:len(str(rolls))-1],
+		 		inline=False)
+		emb.add_field(name="ROLL TOTAL:", value=str(roll_total), inline=False)
+		emb.colour = discord.Colour.from_rgb(0, 0, 0)
+		return emb
