@@ -13,7 +13,7 @@ class Player(Responds):
     """
 
     def __init__(self: Player, discord_id: str,
-            ch: Character(), health: int, inv: Inventory) -> Player:
+            ch: Character(), health: int, inv: Inventory) -> None:
         """
         Constructor
         """
