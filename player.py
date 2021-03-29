@@ -61,7 +61,7 @@ class Player(Responds):
         pass
 
     @staticmethod
-	async def get_response(message: discord.Message) -> discord.Embed:
+    async def get_response(message: discord.Message) -> discord.Embed:
         """
         regexs the message from main.py to determine if they are:
         1. Making a new character ($new character)
@@ -88,14 +88,14 @@ class Player(Responds):
         add_item will call self.add_item, which returns a message to send to
         user
         """
-		pass
+        pass
 
     @staticmethod
-	async def get_help_message(message: discord.Message) -> discord.Embed:
-		pass
+    async def get_help_message(message: discord.Message) -> discord.Embed:
+        pass
 
     @staticmethod
-	async def get_usage_message(message: discord.Message) -> discord.Embed:
+    async def get_usage_message(message: discord.Message) -> discord.Embed:
 		pass
 
     @staticmethod
