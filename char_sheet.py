@@ -12,8 +12,13 @@ from responds import Responds
 class Char_sheet(Responds):
 
     async def get_response(message: discord.Message) -> discord.Embed:
+        return await Char_sheet.__new_sheet(message)
+
+    @staticmethod
+    async def __new_sheet(message: discord.Message) -> discord.Embed:
         emb = discord.Embed()
         emb.title = 'Character Sheet'
+        emb.description = 'WIP - does nothing right now'
 
         details = 'CHARACTER NAME = []\n Class = []\nLevel = []\nRace =[]\n'
 
@@ -36,5 +41,4 @@ class Char_sheet(Responds):
         emb.add_field(name='Saving Throws:', value = ability_score, inline=False)
         emb.add_field(name='Skills:', value = skills, inline=False)
         emb.add_field(name='Stats:', value = stats, inline=False)
-
         return emb
