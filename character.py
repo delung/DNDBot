@@ -3,32 +3,32 @@ import re
 from abc import ABC, abstractmethod
 import asyncio
 
-class Character():
-    def __init__(self: Character, str:int, dex:int, level:int) -> Character:
+class Character:
+    def __init__(self: Character, str:int, dex:int, level:int) -> None:
         self.str = str
         self.dex = dex
         self.level = level
         pass
 
     @classmethod
-    async def from_dict(d: dict) -> Character:
+    async def from_dict(d: dict):
         pass
 
     @classmethod
-    async def to_dict(self: Character) -> dict:
+    async def to_dict(self) -> dict:
         pass
 
-    async def get_stats(self: Character):
+    async def get_stats(self):
         pass
 
-    async def get_modifiers(self: Character):
+    async def get_modifiers(self):
         pass
 
-    async def get_skills(self: Character):
+    async def get_skills(self):
         pass
 
-    async def get_level(self: Character):
+    async def get_level(self):
         pass
 
-    async def set_level(self: Character):
+    async def set_level(self):
         pass
