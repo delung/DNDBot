@@ -5,19 +5,19 @@ import asyncio
 
 class Inventory():
 
-    def __init__(self: Inventory) -> Inventory:
+    def __init__(self) -> None:
         pass
 
     @classmethod
-    async def from_dict(d: dict) -> Inventory:
+    async def from_dict(d: dict):
         pass
 
     @classmethod
-    async def to_dict(self: Inventory) -> dict:
+    async def to_dict(self) -> dict:
         pass
 
-    async def add_item(self: Inventory):
+    async def add_item(self):
         pass
 
-    async def remove_item(self: Inventory):
+    async def remove_item(self):
         pass
