@@ -12,8 +12,7 @@ class Player(Responds):
     by extracting the info from the DM'ed message
     """
 
-    def __init__(self: Player, discord_id: str,
-            ch: Character(), health: int, inv: Inventory) -> None:
+    def __init__(self, discord_id: str, ch: Character(), health: int, inv: Inventory) -> None:
         """
         Constructor
         """
@@ -24,7 +23,7 @@ class Player(Responds):
         pass
 
     @classmethod
-    async def from_dict(d: dict) -> Player:
+    async def from_dict(d: dict):
         """
         extracts info from d
         """
@@ -36,7 +35,7 @@ class Player(Responds):
         pass
 
     @classmethod
-    async def to_dict(self: Player) -> dict:
+    async def to_dict(self) -> dict:
         """
         Returns a dictionary with all relevant fields and attributes.
         """
@@ -46,14 +45,14 @@ class Player(Responds):
         #d[inv] = self.inv.to_dict()
         pass
 
-    async def add_item(self: Player, item_name: str) -> discord.Embed:
+    async def add_item(self, item_name: str) -> discord.Embed:
         """
         Interact with self.inv however necessary
         Generate embed messsage with "item_name" added to inv. and return it
         """
         pass
 
-    async def set_ac(self: Player, ac: int) -> discord.Embed:
+    async def set_ac(self, ac: int) -> discord.Embed:
         """
         Interact with self.ac however necessary
         Generate embed messsage with "ac set to" + str(self.ac). and return it
