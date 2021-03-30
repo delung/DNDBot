@@ -5,7 +5,7 @@ import asyncio
 
 class Inventory():
 
-    def __init__(self: Inventory) -> Inventory:
+    def __init__(self: Inventory) -> None:
         pass
 
     @classmethod
