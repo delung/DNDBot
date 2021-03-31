@@ -58,20 +58,18 @@ async def on_message(message):
 			await message.channel.send('Form sent to DMs')
 		elif not roll_regex.match(message.content) is None:
 			await message.channel.send(embed=await Rolling.get_response(message))
+		elif not map_regex.match(message.content) is None:
+			await message.channel.send(embed=await deal_with_map_message(message))
 		elif not player_regex.match(message.content) is None:
 			#TODO:
 			#await deal_with_player_message(message)
 			pass
 	# checks if message is private
 	elif message.channel.type == discord.ChannelType.private:
-		map_regex = re.compile(r"\$map[a-z]+|\$map |\$maphelp|\$mapnew [0-9]+,[0-9]+")
 		if message.author == client.user:
 			return
 		elif message.content == '$form':
 			await message.channel.send('DM recieved ;)')
-		elif not map_regex.match(message.content) is None:
-			await message.channel.send(embed=await deal_with_map_message(message))
-
 	return
 
 async def get_general_help(message: discord.Message) -> discord.Embed:
