@@ -9,8 +9,8 @@ from typing import Iterable
 
 class Battlemap(Responds, Saveable):
 
-    GRID_UNIT_LENGTH = 5
-    GRID_UNIT_HEIGHT = 3
+    GRID_UNIT_LENGTH = 3
+    GRID_UNIT_HEIGHT = 1
     ALLOW_DIAGONAL_MOVEMENT = True
     SYMBOL_LEGEND = "W: wall\nD: door\nX: impassable terrain\n?: curio"
     def __init__(self, rows:int, cols:int) -> None:
