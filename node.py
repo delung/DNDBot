@@ -56,25 +56,25 @@ class Node(Saveable):
     async def set_impassable(self) -> None:
         self.is_char = False
         self.impassable = True
-        self.symbol = "X"#"⊠"
+        self.symbol = "⊗"
         return
 
     async def set_wall(self) -> None:
         self.is_char = False
         self.impassable = True
-        self.symbol = "W"#"⧯"
+        self.symbol = "∎"
         return
 
     async def set_door(self) -> None:
         self.is_char = False
         self.impassable = False
-        self.symbol = "D"#"⨅"
+        self.symbol = "⨅"
         return
 
     async def set_curio(self) -> None:
         self.is_char = False
         self.impassable = False
-        self.symbol = "?"#"⁉"
+        self.symbol = "⁉"
         return
 
     async def set_char(self, symbol: str) -> None:

@@ -12,7 +12,7 @@ class Battlemap(Responds, Saveable):
     GRID_UNIT_LENGTH = 3
     GRID_UNIT_HEIGHT = 1
     ALLOW_DIAGONAL_MOVEMENT = True
-    SYMBOL_LEGEND = "W: wall\nD: door\nX: impassable terrain\n?: curio"
+    SYMBOL_LEGEND = "∎: wall\n⨅: door\n⊗: impassable terrain\n⁉: curio"
     def __init__(self, rows:int, cols:int) -> None:
         if not isinstance(rows, int) or not isinstance(cols, int):
             raise ValueError("Rows and cols must both be integers")
