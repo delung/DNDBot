@@ -4,6 +4,7 @@ import asyncio
 import re
 import requests
 from rolling import Rolling
+from battlemap import Battlemap
 from char_sheet import Char_sheet
 from get_gif import *
 
@@ -12,6 +13,7 @@ howdy_gif = 'https://tenor.com/view/howdy-cowboy-woody-toy-story-shark-gif-55436
 #TODO:
 #Dictionary that maps discord id -> Player instance
 players = dict()
+bm = None
 
 @client.event
 async def on_ready():
@@ -35,7 +37,7 @@ async def on_message(message):
 	roll_regex = re.compile(r"\$r |\$r[0-9]|\$roll[0-9]|\$roll|\$roll help")
 	#TODO:
 	player_regex = re.compile(r"") # Checks if the message is related to player
-
+	map_regex = re.compile(r"\$map[a-z]+|\$map |\$maphelp|\$mapnew [0-9]+,[0-9]+")
 	# checks if message is from channel
 	if message.channel.type == discord.ChannelType.text:
 		if message.author == client.user:
@@ -60,16 +62,34 @@ async def on_message(message):
 			pass
 	# checks if message is private
 	elif message.channel.type == discord.ChannelType.private:
+		map_regex = re.compile(r"\$map[a-z]+|\$map |\$maphelp|\$mapnew [0-9]+,[0-9]+")
 		if message.author == client.user:
 			return
 		elif message.content == '$form':
 			await message.channel.send('DM recieved ;)')
+		elif not map_regex.match(message.content) is None:
+			await message.channel.send(embed=await deal_with_map_message(message))
+
 	return
 
-async def get_general_help(message):
+async def get_general_help(message: discord.Message) -> discord.Embed:
 	return "General help will be here eventually"
 
-async def deal_with_player_message(message: discord.Message):
+async def deal_with_map_message(message: discord.Message) -> discord.Embed:
+	global bm
+	MAX_ROWS_TIMES_COLS = 27
+	map_regex = re.compile(r"\$map[a-z]+|\$map |\$maphelp")
+	new_map_regex = re.compile(r"\$mapnew [0-9]+,[0-9]+")
+	if not new_map_regex.match(message.content) is None:
+		nums = re.findall(r"[0-9]+", message.content)
+		if int(nums[0]) * int(nums[1]) > MAX_ROWS_TIMES_COLS:
+			return await Battlemap.get_usage_message(message)
+		bm = Battlemap(int(nums[0]), int(nums[1]))
+		return await bm.get_grid()
+	elif not map_regex.match(message.content) is None:
+		return await bm.get_response(message)
+
+async def deal_with_player_message(message: discord.Message) -> discord.Embed:
 	#TODO:
 	"""
 	Pseudocode:
@@ -123,5 +143,6 @@ async def load_players():
 if __name__ == "__main__":
 	#req = requests.get("https://discordapp.com/api/v8/gateway")
 	#print(req.headers)
-	client.run(os.getenv("DISCORD_BOT_TOKEN"))
+	client.run("MTc5NzAwNTUwMTEwMDE5NTg1.VzJNLQ.0aJeJiFv2m1My2r41tafCr5_UCE")
+	#client.run(os.getenv("DISCORD_BOT_TOKEN"))
 	print("Exiting")
