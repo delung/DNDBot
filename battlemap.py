@@ -178,9 +178,9 @@ class Battlemap(Responds, Saveable):
             emb = discord.Embed()
             emb.title = "Location " + str(x) + "," + str(y) + " is invalid."
             return False, emb
-        if not (await self.nodes[x][y].is_empty()):
+        if self.nodes[x][y].impassable:
             emb = discord.Embed()
-            emb.title = "Location " + str(x) + "," + str(y) + " is not empty."
+            emb.title = "Location " + str(x) + "," + str(y) + " is not passable."
             return False, emb
         return True, None
 
