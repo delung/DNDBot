@@ -77,7 +77,7 @@ async def get_general_help(message: discord.Message) -> discord.Embed:
 
 async def deal_with_map_message(message: discord.Message) -> discord.Embed:
 	global bm
-	MAX_ROWS_TIMES_COLS = 27
+	MAX_ROWS_TIMES_COLS = 100
 	map_regex = re.compile(r"\$map[a-z]+|\$map |\$maphelp")
 	new_map_regex = re.compile(r"\$mapnew [0-9]+,[0-9]+")
 	if not new_map_regex.match(message.content) is None:
