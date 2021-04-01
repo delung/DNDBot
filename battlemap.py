@@ -176,11 +176,11 @@ class Battlemap(Responds, Saveable):
     async def __is_valid(self, x: int, y: int) -> (bool, discord.Embed):
         if x < 0 or x >= self.rows or y >= self.cols or y < 0:
             emb = discord.Embed()
-            emb.title = "Location " + str(x) + "," + str(y) + " is invalid."
+            emb.title = "Location " + str(x) + "," + str(y) + " is out of bounds."
             return False, emb
         if self.nodes[x][y].impassable:
             emb = discord.Embed()
-            emb.title = "Location " + str(x) + "," + str(y) + " is not passable."
+            emb.title = "Location " + str(x) + "," + str(y) + " is occupied or not passable."
             return False, emb
         return True, None
 
