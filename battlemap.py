@@ -1,6 +1,4 @@
 import discord
-<<<<<<< HEAD
-=======
 import re
 from responds import Responds
 from saveable import Saveable
@@ -392,4 +390,3 @@ class Battlemap(Responds, Saveable):
             return [(start.row, start.col)] + path[::-1]
         else:
             return None
->>>>>>> 752c0f3a7e6a7535328f31aae66adaed77fbc32d

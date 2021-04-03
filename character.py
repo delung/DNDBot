@@ -3,11 +3,7 @@ import re
 from abc import ABC, abstractmethod
 import asyncio
 
-<<<<<<< HEAD
-class Character:
-=======
 class Character(Saveable):
->>>>>>> 752c0f3a7e6a7535328f31aae66adaed77fbc32d
     def __init__(self: Character, str:int, dex:int, level:int) -> None:
         self.str = str
         self.dex = dex
