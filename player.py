@@ -4,7 +4,7 @@ from responds import Responds
 from abc import ABC, abstractmethod
 import asyncio
 
-class Player(Responds, Saveable):
+class Player(Responds):
     """
     1. Player types $new character
     2. main.py will call the get_new_char_form() function from player

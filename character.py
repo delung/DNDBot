@@ -3,8 +3,8 @@ import re
 from abc import ABC, abstractmethod
 import asyncio
 
-class Character(Saveable):
-    def __init__(self: Character, str:int, dex:int, level:int) -> None:
+class Character():
+    def __init__(self, str:int, dex:int, level:int) -> None:
         self.str = str
         self.dex = dex
         self.level = level
