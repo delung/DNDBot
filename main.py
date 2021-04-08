@@ -3,6 +3,8 @@ import os
 import asyncio
 import re
 import requests
+import pickle
+from datetime import datetime
 from rolling import Rolling
 #from database import *
 from battlemap import Battlemap
@@ -19,8 +21,15 @@ bm = None
 
 @client.event
 async def on_ready():
-	#TODO:
-	#players = load_players() #Reads locally saved file into player instances
+	global players
+	global bm
+	cwd = os.getcwd()
+    player_backup = cwd + r"/backups/player_backups/player_backup.bin"
+    bm_backup = cwd + r"/backups/bm_backups/bm_backup.bin"
+    if os.path.exists(player_backup):
+		players = await load_players()
+    if os.path.exists(bm_backup):
+		bm = await load_bm()
 	#client.loop.create_task(create_backups()) #sets up hourly backups
 	print('We have logged in as {0.user}'.format(client))
 
@@ -104,41 +113,112 @@ async def deal_with_player_message(message: discord.Message) -> discord.Embed:
 	pass
 
 async def create_backups():
-	#TODO:
-	#while not client.is_closed:
-		#asyncio.sleep(3600) #wait one hour
-		#save_players_to_file()
-		#OPTIONAL:
-			#if num_files > 100:
-				#delete oldest file
-	pass
+	global client
+	while not client.is_closed:
+		asyncio.sleep(3600) #wait one hour
+		saved_players = await save_players_to_file()
+		saved_bm = await save_bm_to_file()
+		if saved_bm:
+			print("saved battlemap successfully")
+		if saved_players:
+			print("saved battlemap successfully")
 
-async def save_players_to_file():
-	#TODO:
-	"""
-	Pseudo code:
-	change_file_name("players.json", "players_old_DATEANDTIME.json")
-	f = open("players.json") #file should always be "players.json" or something
-	for each player in players:
-		f.write("START_PLAYER")
-		f.write(player.get_ID)
-		f.write(player.to_dict())
-		f.write("END_PLAYER")
-	f.close()
-	"""
-	pass
+		cwd = os.getcwd()
+		player_file_prefix = cwd + r"/backups/player_backups/"
+		bm_file_prefix = cwd + r"/backups/bm_backups/"
+		player_fname = "players_backup"
+		bm_fname = "bm_backup"
+		file_postfix = ".bin"
 
-async def load_players():
-	#TODO:
-	"""
-	Pseudocode:
+		for pre, name in [(player_file_prefix, player_fname + file_postfix), (bm_file_prefix, bm_fname + file_postfix)]:
+			if os.path.exists(pre):
+				list_of_files = os.listdir(pre)
+				if name in list_of_files:
+				    list_of_files.remove(name)
+				list_of_files = [pre + l for l in list_of_files]
+				if len(list_of_files) > 100:
+				    oldest_file = min(list_of_files, key=os.path.getctime)
+				    print("Removing " + oldest_file)
+				    os.remove(os.path.abspath(oldest_file))
+	return
 
-	f = open_file(players.json) #doesn't have to be json
-	for entry in f:
-		#entry is the data between start/end player markers
-		id = entry[id]
-		players[id] = Players.from_dict(entry[info])
-	"""
+async def save_players_to_file() -> bool:
+    global players
+    cwd = os.getcwd()
+    date = datetime.now().strftime("%Y_%m_%d-%I-%M-%S_%p")
+    file_prefix = cwd + r"/backups/player_backups/"
+    file_postfix = ".bin"
+    if not os.path.exists(file_prefix):
+        os.makedirs(file_prefix)
+    fname = r"players_backup"
+    frename = r"players_backup_" + date
+    iters = 0
+    while (True):
+        if (os.path.exists(file_prefix + frename + file_postfix)):
+            frename += "_new"
+        else:
+            break
+        if iters > 10:
+            raise IOError("Too many backups at the same date/time")
+        iters += 1
+    if (os.path.exists(file_prefix + fname + file_postfix)):
+        os.rename(file_prefix + fname + file_postfix, file_prefix + frename + file_postfix)
+    file = open(file_prefix + fname + file_postfix, "bw+")
+    pickle.dump(players, file)
+    file.close()
+    return True
+
+async def load_players() -> dict:
+    cwd = os.getcwd()
+    file_prefix = cwd + r"/backups/player_backups/"
+    if not os.path.exists(file_prefix):
+        return None
+    fname = r"players_backup.bin"
+    if (os.path.exists(file_prefix + fname)) and os.path.getsize(file_prefix + fname) > 0:
+        file = open(file_prefix + fname, "rb")
+        players = pickle.load(file)
+        file.close()
+        return players
+    return None
+
+async def save_bm_to_file() -> bool:
+    global bm
+    cwd = os.getcwd()
+    date = datetime.now().strftime("%Y_%m_%d-%I-%M-%S_%p")
+    file_prefix = cwd + r"/backups/bm_backups/"
+    file_postfix = ".bin"
+    if not os.path.exists(file_prefix):
+        os.makedirs(file_prefix)
+    fname = r"bm_backup"
+    frename = r"bm_backup_" + date
+    iters = 0
+    while (True):
+        if (os.path.exists(file_prefix + frename + file_postfix)):
+            frename += "_new"
+        else:
+            break
+        if iters > 10:
+            raise IOError("Too many backups at the same date/time")
+        iters += 1
+    if (os.path.exists(file_prefix + fname + file_postfix)):
+        os.rename(file_prefix + fname + file_postfix, file_prefix + frename + file_postfix)
+    file = open(file_prefix + fname + file_postfix, "bw+")
+    pickle.dump(bm, file)
+    file.close()
+    return True
+
+async def load_bm() -> Battlemap:
+    cwd = os.getcwd()
+    file_prefix = cwd + r"/backups/bm_backups/"
+    if not os.path.exists(file_prefix):
+        return None
+    fname = r"bm_backup.bin"
+    if (os.path.exists(file_prefix + fname)) and os.path.getsize(file_prefix + fname) > 0:
+        file = open(file_prefix + fname, "rb")
+        bm = pickle.load(file)
+        file.close()
+        return bm
+    return None
 
 if __name__ == "__main__":
 	#req = requests.get("https://discordapp.com/api/v8/gateway")
