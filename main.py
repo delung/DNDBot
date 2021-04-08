@@ -118,9 +118,9 @@ async def create_backups():
 		asyncio.sleep(3600) #wait one hour
 		saved_players = await save_players_to_file()
 		saved_bm = await save_bm_to_file()
-		if saved_bm:
-			print("saved battlemap successfully")
 		if saved_players:
+			print("saved players successfully")
+		if saved_bm:
 			print("saved battlemap successfully")
 
 		cwd = os.getcwd()
