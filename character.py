@@ -1,14 +1,15 @@
 import discord
 import re
+from saveable import Saveable
 from abc import ABC, abstractmethod
 import asyncio
 
 class Character(Saveable):
-    def __init__(self: Character, str:int, dex:int, level:int) -> None:
+
+    def __init__(self, str:int, dex:int, level:int) -> None:
         self.str = str
         self.dex = dex
         self.level = level
-        pass
 
     @classmethod
     async def from_dict(d: dict):

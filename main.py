@@ -6,8 +6,8 @@ import requests
 from rolling import Rolling
 #from database import *
 from battlemap import Battlemap
-from char_sheet import Char_sheet
 from get_gif import *
+from player import Player
 
 client = discord.Client()
 howdy_gif = 'https://tenor.com/view/howdy-cowboy-woody-toy-story-shark-gif-5543642'
@@ -40,9 +40,8 @@ async def on_message(message):
 	"""
 	"""
 	roll_regex = re.compile(r"\$r |\$r[0-9]|\$roll[0-9]|\$roll|\$roll help")
-	#TODO:
-	player_regex = re.compile(r"") # Checks if the message is related to player
 	map_regex = re.compile(r"\$map[a-z]+|\$map |\$maphelp|\$mapnew [0-9]+,[0-9]+")
+	player_regex = re.compile(r"\$player new|\$player new example|\$player update_sheet")
 	# checks if message is from channel
 	if message.channel.type == discord.ChannelType.text:
 		if message.author == client.user:
@@ -55,10 +54,6 @@ async def on_message(message):
 			await message.channel.send(get_ricardo_gif())
 		elif message.content == '$hello' or message.content == '$howdy':
 			await message.channel.send(howdy_gif)
-		elif message.content == '$form':
-			user = message.author
-			await user.send(embed=await Char_sheet.get_response(message))
-			await message.channel.send('Form sent to DMs')
 		elif not roll_regex.match(message.content) is None:
 			await message.channel.send(embed=await Rolling.get_response(message))
 		elif not map_regex.match(message.content) is None:
@@ -66,6 +61,7 @@ async def on_message(message):
 		elif not player_regex.match(message.content) is None:
 			#TODO:
 			#await deal_with_player_message(message)
+			await message.channel.send(embed=await Player.get_response(message))
 			pass
 	# checks if message is private
 	elif message.channel.type == discord.ChannelType.private:
