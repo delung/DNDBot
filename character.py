@@ -4,8 +4,7 @@ from saveable import Saveable
 from abc import ABC, abstractmethod
 import asyncio
 
-class Character(Saveable):
-
+class Character():
     def __init__(self, str:int, dex:int, level:int) -> None:
         self.str = str
         self.dex = dex

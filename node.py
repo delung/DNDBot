@@ -1,7 +1,6 @@
-from saveable import Saveable
 from math import sqrt, inf
 
-class Node(Saveable):
+class Node():
 
     def __init__(self, row: int, col: int, parent=None) -> None:
         self.symbol = " "
@@ -82,10 +81,3 @@ class Node(Saveable):
         self.impassable = True
         self.symbol = symbol
         return
-
-    async def to_dict(self) -> dict:
-        return {"test_key" : "test_val"}
-
-    @staticmethod
-    async def from_dict(d: dict):
-        return Node()

@@ -17,7 +17,11 @@ list_of_ricardo_gifs = [
 	"https://tenor.com/view/gogo-dancer-dance-ricardo-milos-moves-gif-12970659",
 	"https://tenor.com/view/ricardo-milos-ricardo-milos-gif-13248430",
 	"https://tenor.com/view/pizza-ricardo-milos-flick-gif-14626147",
-	"https://tenor.com/view/ricardo-milos-mijolnir-ricardomilos-mijolnir-ricardo-gif-14302852"
+	"https://tenor.com/view/ricardo-milos-mijolnir-ricardomilos-mijolnir-ricardo-gif-14302852",
+	"https://tenor.com/view/naruto-ricardo-kurama-milos-meme-gif-13427812",
+	"https://tenor.com/view/ricardo-ricardo-milos-ricardo-memes-gif-14470596",
+	"https://tenor.com/view/ricardo-milos-dancing-musical-gif-16819339",
+	"https://thumbs.gfycat.com/MealyUniformGalapagosmockingbird-max-1mb.gif"
 ]
 
 def get_ree_gif():

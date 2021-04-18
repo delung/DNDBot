@@ -1,13 +1,12 @@
 import discord
 import re
 from responds import Responds
-from saveable import Saveable
 from abc import ABC, abstractmethod
 import asyncio
 from node import Node
 from typing import Iterable
 
-class Battlemap(Responds, Saveable):
+class Battlemap(Responds):
 
     GRID_UNIT_LENGTH = 3
     GRID_UNIT_HEIGHT = 1
@@ -25,33 +24,6 @@ class Battlemap(Responds, Saveable):
             "n","o","p","q","r","s","t","u","v","w","x","y","z",
         ]
         self.num_chars = 0
-
-    async def to_dict(self) -> dict:
-        d = dict()
-        d["rows"] = self.rows
-        d["cols"] = self.cols
-        list_of_nodes = []
-        for i in range(self.rows):
-            for j in range(self.cols):
-                list_of_nodes += [await self.nodes[i][j].to_dict()]
-        d["nodes"] = list_of_nodes
-        return d
-
-    @staticmethod
-    async def from_dict(d: dict):
-        rows = d["rows"]
-        cols = d["cols"]
-        list_of_nodes = d["nodes"]
-        bm = Battlemap(rows, cols)
-        node_array = []
-        sub_list = []
-        for i in range(rows):
-            sub_list = []
-            for j in range(cols):
-                sub_list += [await Node.from_dict(list_of_nodes.pop(0))]
-            node_array += [sub_list]
-        bm.nodes = node_array
-        return bm
 
     async def get_response(self, message: discord.Message) -> discord.Embed:
         get_map = re.compile(r"\$mapshow")
