@@ -1,6 +1,5 @@
 import discord
 import re
-from saveable import Saveable
 from abc import ABC, abstractmethod
 import asyncio
 
@@ -31,4 +30,7 @@ class Character():
         pass
 
     async def set_level(self):
+        pass
+
+    async def set_form(self):
         pass

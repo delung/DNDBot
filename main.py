@@ -27,11 +27,11 @@ async def on_ready():
 	global players
 	global bm
 	cwd = os.getcwd()
-    player_backup = cwd + r"/backups/player_backups/player_backup.bin"
-    bm_backup = cwd + r"/backups/bm_backups/bm_backup.bin"
-    if os.path.exists(player_backup):
+	player_backup = cwd + r"/backups/player_backups/player_backup.bin"
+	bm_backup = cwd + r"/backups/bm_backups/bm_backup.bin"
+	if os.path.exists(player_backup):
 		players = await load_players()
-    if os.path.exists(bm_backup):
+	if os.path.exists(bm_backup):
 		bm = await load_bm()
 	#client.loop.create_task(create_backups()) #sets up hourly backups
 	print('We have logged in as {0.user}'.format(client))

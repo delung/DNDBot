@@ -1,12 +1,57 @@
 import discord
 import re
 from responds import Responds
-from saveable import Saveable
 from character import Character
 from inventory import Inventory
 from abc import ABC, abstractmethod
 from form import *
 import asyncio
+import json
+
+re_char_name = 0
+re_char_class = 1
+re_char_level = 2
+re_char_race = 3
+re_char_prof_bonus = 4
+
+# char ability score
+re_char_str = 5
+re_char_dex = 6
+re_char_con = 7
+re_char_int = 8
+re_char_wis = 9
+re_char_cha = 10
+
+# char saving throws
+re_char_s_str = 11
+re_char_s_dex = 12
+re_char_s_con = 13
+re_char_s_int = 14
+re_char_s_wis = 15
+re_char_s_cha = 16
+
+# Skills
+re_char_acrobatics = 17
+re_char_animal_handling = 18
+re_char_arcana = 19
+re_char_atheletics = 20
+re_char_deception = 21
+re_char_history = 22
+re_char_insight = 23
+re_char_intimidation = 24
+re_char_investigation = 25
+re_char_medicine = 26
+re_char_nature = 27
+re_char_perception = 28
+re_char_performance = 29
+re_char_religion = 30
+re_char_sleight_of_hand = 31
+re_char_stealth = 32
+re_char_survival = 33
+
+re_char_ac = 34
+re_char_speed = 35
+re_char_max_hit = 36
 
 class Player(Responds):
     """
@@ -63,6 +108,98 @@ class Player(Responds):
         pass
 
     @staticmethod
+    async def parse_form(message: discord.Message) -> discord.Embed:
+        """
+        1. create loop starting at first line.
+        2. Move to next element until expected regex is found
+        3. else return error
+        """
+        sheet = message.content.splitlines()
+        re_list = [None] * 37
+        stat_dict = {}
+        # char details
+
+        re_list[re_char_name] = re.compile(r"CHARACTER NAME = \[(.*?)\]")
+        re_list[re_char_class] = re.compile(r"Class = \[(.*?)\]")
+        re_list[re_char_level] = re.compile(r"Level = \[(.*?)\]")
+        re_list[re_char_race] = re.compile(r"Race = \[(.*?)\]")
+        re_list[re_char_prof_bonus] = re.compile(r"PROFICIENCY BONUS = \[(.*?)\]")
+
+        # char ability score
+        re_list[re_char_str] = re.compile(r"STRENGTH = \[(.*)+\]\[(.*)+\]")
+        re_list[re_char_dex] = re.compile(r"DEXTERITY = \[(.*)+\]\[(.*)+\]")
+        re_list[re_char_con] = re.compile(r"CONSTITUTION = \[(.*)+\]\[(.*)+\]")
+        re_list[re_char_int] = re.compile(r"INTELLIGENCE = \[(.*)+\]\[(.*)+\]")
+        re_list[re_char_wis] = re.compile(r"WISDOM = \[(.*)+\]\[(.*)+\]")
+        re_list[re_char_cha] = re.compile(r"CHARISMA = \[(.*)+\]\[(.*)+\]")
+
+        # char saving throws
+        re_list[re_char_s_str] = re.compile(r"STRENGTH = \[(!|)\]\[(.*)+\]")
+        re_list[re_char_s_dex] = re.compile(r"DEXTERITY = \[(!|)\]\[(.*)+\]")
+        re_list[re_char_s_con] = re.compile(r"CONSTITUTION = \[(!|)\]\[(.*)+\]")
+        re_list[re_char_s_int] = re.compile(r"INTELLIGENCE = \[(!|)\]\[(.*)+\]")
+        re_list[re_char_s_wis] = re.compile(r"WISDOM = \[(!|)\]\[(.*)+\]")
+        re_list[re_char_s_cha] = re.compile(r"CHARISMA = \[(!|)\]\[(.*)+\]")
+
+        # Skills
+        re_list[re_char_acrobatics] = re.compile(r"Acrobatics \(Dex\) = \[(!|)\]\[(.*)+\]")
+        re_list[re_char_animal_handling] = re.compile(r"Animal Handling \(Wis\) = \[(!|)\]\[(.*)+\]")
+        re_list[re_char_arcana] = re.compile(r"Arcana \(Int\) = \[(!|)\]\[(.*)+\]")
+        re_list[re_char_atheletics] = re.compile(r"Athletics \(Str\) = \[(!|)\]\[(.*)+\]")
+        re_list[re_char_deception] = re.compile(r"Deception \(Cha\) = \[(!|)\]\[(.*)+\]")
+        re_list[re_char_history] = re.compile(r"History \(Int\) = \[(!|)\]\[(.*)+\]")
+        re_list[re_char_insight] = re.compile(r"Insight \(Wis\) = \[(!|)\]\[(.*)+\]")
+        re_list[re_char_intimidation] = re.compile(r"Intimidation \(Cha\) = \[(!|)\]\[(.*)+\]")
+        re_list[re_char_investigation] = re.compile(r"Investigation \(Int\) = \[(!|)\]\[(.*)+\]")
+        re_list[re_char_medicine] = re.compile(r"Medicine \(Wis\) = \[(!|)\]\[(.*)+\]")
+        re_list[re_char_nature] = re.compile(r"Nature \(Int\) = \[(!|)\]\[(.*)+\]")
+        re_list[re_char_perception] = re.compile(r"Perception \(Wis\) = \[(!|)\]\[(.*)+\]")
+        re_list[re_char_performance] = re.compile(r"Performance \(Cha\) = \[(!|)\]\[(.*)+\]")
+        re_list[re_char_religion] = re.compile(r"Religion \(Int\) = \[(!|)\]\[(.*)+\]")
+        re_list[re_char_sleight_of_hand] = re.compile(r"Sleight of Hand \(Dex\) = \[(!|)\]\[(.*)+\]")
+        re_list[re_char_stealth] = re.compile(r"Stealth \(Dex\) = \[(!|)\]\[(.*)+\]")
+        re_list[re_char_survival] = re.compile(r"Survival \(Wis\) = \[(!|)\]\[(.*)+\]")
+
+        re_list[re_char_ac] = re.compile(r"ARMOR CLASS = \[(.*?)\]")
+        re_list[re_char_speed] = re.compile(r"SPEED = \[(.*?)\]")
+        re_list[re_char_max_hit] = re.compile(r"HIT POINT MAXIMUM = \[(.*?)\]")
+
+        regex_content_1 = re.compile(r"\[(.*?)\]")
+        regex_content_2 = re.compile(r"\[(.*?)\]\[(.*?)\]")
+
+        str_index = 0
+        regex_index = 0
+
+        while str_index < len(sheet) and regex_index < len(re_list):
+            if re_list[regex_index].match(sheet[str_index]):
+
+                if not (regex_match_2 := regex_content_2.search(sheet[str_index])) is None:
+                    tuple = (regex_match_2.group(1), regex_match_2.group(2))
+                    stat_dict[regex_index] = tuple
+
+                elif not (regex_match_1 := regex_content_1.search(sheet[str_index])) is None:
+                    tuple = ('',regex_match_1.group(1))
+                    stat_dict[regex_index] = tuple
+
+                regex_index = regex_index + 1
+
+            str_index = str_index + 1
+
+        # end of loop creates dictionary of stats
+        print(stat_dict.values())
+
+        emb = discord.Embed()
+
+        print(regex_index)
+        print(len(re_list))
+        # if something was missing in the form and it isnt exact - send error
+        if regex_index != len(re_list):
+            emb.description = 'Error - form isnt correct or missing element\n'
+        else:
+            emb.description = json.dumps(stat_dict)
+        return emb
+
+    @staticmethod
     async def get_response(message: discord.Message) -> discord.Embed:
         """
         regexs the message from main.py to determine if they are:
@@ -105,8 +242,8 @@ class Player(Responds):
             return await sample_sheet(message)
 
         elif not update_sheet_match is None:
-            print("Parsing")
-            return await sheet_accepted(message)
+            return await Player.parse_form(message)
+            #return await sheet_accepted(message)
         return await new_sheet(message)
 
     @staticmethod
