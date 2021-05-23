@@ -97,7 +97,8 @@ class Rolling(Responds):
 		emb.title = str(message.author.display_name) + " Rolled " + \
 			str(num_rolls) + " d" + str(num_sides) + plural
 		emb.type = "rich"
-		emb.add_field(name="ROLLS:", value=str(rolls)[1:len(str(rolls))-1],
+		if num_rolls < MAX_ROLLS_TO_SHOW_INDIVIDUAL_ROLLS:
+			emb.add_field(name="ROLLS:", value=str(rolls)[1:len(str(rolls))-1],
 		 		inline=False)
 		emb.add_field(name="ROLL TOTAL:", value=str(roll_total), inline=False)
 		emb.colour = discord.Colour.from_rgb(0, 0, 0)
