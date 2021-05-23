@@ -32,7 +32,7 @@ class Battlemap(Responds):
         add_door = re.compile(r"\$mapadd door [0-9]+,[0-9]+$")
         add_curio = re.compile(r"\$mapadd curio [0-9]+,[0-9]+$")
         add_char = re.compile(r"\$mapadd char [a-zA-Z]+ [0-9]+,[0-9]+$")
-        move_char = re.compile(r"\$mapmove [0-9] [0-9]+,[0-9]+ [0-9]+$")
+        move_char = re.compile(r"\$mapmove ([a-z]|[0-9]) [0-9]+,[0-9]+ [0-9]+$")
         remove_obj = re.compile(r"\$maprem [0-9]+,[0-9]+$")
         remove_all = re.compile(r"\$maprem all$")
         help = re.compile(r"\$map help$")
