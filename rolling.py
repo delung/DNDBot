@@ -97,7 +97,7 @@ class Rolling(Responds):
 		emb.title = str(message.author.display_name) + " Rolled " + \
 			str(num_rolls) + " d" + str(num_sides) + plural
 		emb.type = "rich"
-		if num_rolls < MAX_ROLLS_TO_SHOW_INDIVIDUAL_ROLLS:
+		if num_rolls < Rolling.MAX_ROLLS_TO_SHOW_INDIVIDUAL_ROLLS:
 			emb.add_field(name="ROLLS:", value=str(rolls)[1:len(str(rolls))-1],
 		 		inline=False)
 		emb.add_field(name="ROLL TOTAL:", value=str(roll_total), inline=False)
