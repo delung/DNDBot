@@ -24,6 +24,14 @@ list_of_ricardo_gifs = [
 	"https://thumbs.gfycat.com/MealyUniformGalapagosmockingbird-max-1mb.gif"
 ]
 
+howdy2_gifs = [
+	"https://tenor.com/view/letter-h-gif-9063752",
+	"https://tenor.com/view/letter-o-gif-9063759",
+	"https://tenor.com/view/letter-w-gif-9063767",
+	"https://tenor.com/view/letter-d-dancing-gif-9063748",
+	"https://tenor.com/view/letter-y-gif-9063769"
+]
+
 def get_ree_gif():
 	return list_of_ree_gifs[random.randint(0, len(list_of_ree_gifs)-1)]
 

@@ -63,6 +63,9 @@ async def on_message(message):
 			await message.channel.send(get_ricardo_gif())
 		elif message.content == '$hello' or message.content == '$howdy':
 			await message.channel.send(howdy_gif)
+		elif message.content == '$howdy2':
+			for i in range(len(howdy2_gifs)):
+				await message.channel.send(howdy2_gifs[i])
 		elif not roll_regex.match(message.content) is None:
 			await message.channel.send(embed=await Rolling.get_response(message))
 		elif not map_regex.match(message.content) is None:
