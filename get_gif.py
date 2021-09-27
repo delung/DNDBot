@@ -10,7 +10,8 @@ list_of_ree_gifs = [
 	"https://i.kym-cdn.com/photos/images/newsfeed/001/297/231/637.gif",
 	"https://i.kym-cdn.com/photos/images/newsfeed/001/140/498/4a4.gif",
 	"https://media.tenor.com/images/d3f53f3e3ebed32594dc9260053f2059/tenor.gif",
-	"https://media.tenor.com/images/b62e18b4e1d438823377f1702bf86cca/tenor.gif"
+	"https://media.tenor.com/images/b62e18b4e1d438823377f1702bf86cca/tenor.gif",
+	"https://tenor.com/view/pepe-reeee-kek-gif-13325897"
 ]
 
 list_of_ricardo_gifs = [

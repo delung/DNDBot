@@ -10,6 +10,7 @@ from rolling import Rolling
 from battlemap import Battlemap
 from get_gif import *
 from player import Player
+from youtube import Youtube
 
 client = discord.Client()
 howdy_gif = 'https://tenor.com/view/howdy-cowboy-woody-toy-story-shark-gif-5543642'
@@ -20,6 +21,7 @@ players = dict()
 #TODO:
 #Dictionary that maps discord id -> Player instance
 players = dict()
+youtube = Youtube(client)
 bm = None
 
 @client.event
@@ -51,6 +53,7 @@ async def on_message(message):
 	roll_regex = re.compile(r"\$r |\$r[0-9]|\$roll[0-9]|\$roll|\$roll help")
 	map_regex = re.compile(r"\$map[a-z]+|\$map |\$maphelp|\$mapnew [0-9]+,[0-9]+")
 	player_regex = re.compile(r"\$player new|\$player new example|\$player update_sheet")
+	play_regex = re.compile(r"\$play [a-zA-Z0-9]+|\$queue|\$pause|\$resume|\$clear [0-9]+|\$stop|\$skip")
 	# checks if message is from channel
 	if message.channel.type == discord.ChannelType.text:
 		if message.author == client.user:
@@ -75,6 +78,8 @@ async def on_message(message):
 			#await deal_with_player_message(message)
 			await message.channel.send(embed=await Player.get_response(message))
 			pass
+		elif not play.match(message.content) is None:
+			await deal_with_audio_message(message)
 	# checks if message is private
 	elif message.channel.type == discord.ChannelType.private:
 		if message.author == client.user:
@@ -113,6 +118,60 @@ async def deal_with_player_message(message: discord.Message) -> discord.Embed:
 		await message.channel.send(embed = await Player.get_response(message))
 	"""
 	pass
+
+async def deal_with_audio_message(message: discord.Message):
+	vc = message.author.voice.channel
+	state = 0
+	curr_task = None
+	vc_timeout = 300 #5 minutes
+	vc_timeout_in_channel = 900 #15 minutes
+	num_other_users_in_channel = len(vc.members)
+	start_time = vc_timeout_in_channel
+	if message.content.startswith("$play"):
+		await youtube.add_to_queue(message[len("$play"):])
+		await vc.connect()
+		start_time = datetime.now()
+		state = 2
+	elif message.content.startswith("$pause"):
+		if state == 2:
+			state = 1
+	elif message.content.startswith("$resume"):
+		if state == 1:
+			state = 2
+	elif message.content.startswith("$stop"):
+		state = 0
+		curr_task.cancel()
+		vc.stop()
+		await vc.disconnect()
+	elif message.content.startswith("$queue"):
+		await message.channel.send(embed=youtube.get_queue())
+		pass
+	elif message.content.startswith("$skip"):
+		if state == 2:
+			curr_task.cancel()
+			vc.stop()
+			youtube.skip_item()
+		else:
+			await message.channel.send("No song currently playing.")
+			pass
+	elif message.content.startswith("$clear"):
+		state = 1
+	else:
+		await message.channel.send("bro what happened")
+
+	if state == 2:
+		curr_time = datetime.now()
+		time_diff_in_seconds = (curr_time - start_time).seconds
+		timeout = ((time_diff_in_seconds > vc_timeout) and (num_other_users_in_channel <= 0)) or (time_diff_in_seconds > vc_timeout_in_channel)
+		while (not youtube.is_queue_empty() and not timeout):
+			await message.channel.send(embed=youtube.get_queue())
+			num_other_users_in_channel = len(vc.members) - 1 #sub. 1 to account for self
+			curr_task = asyncio.create_task(youtube.gen_play_next_in_queue_task())
+			await curr_task
+	else:
+		await message.channel.send("bro how did this happen")
+		pass
+	return
 
 async def create_backups():
 	global client
@@ -222,56 +281,6 @@ async def load_bm() -> Battlemap:
         return bm
     return None
 
-async def deal_with_player_message(message: discord.Message):
-	#TODO:
-	"""
-	Pseudocode:
-
-	if msg == $new char:
-		send_help_form_to_player_in_dm()
-	if msg.channel is a DM and msg == filled_player_form:
-		players[discord_id] = Player(msg)
-	else:
-		await message.channel.send(embed = await Player.get_response(message))
-	"""
-	pass
-
-async def create_backups():
-	#TODO:
-	#while not client.is_closed:
-		#asyncio.sleep(3600) #wait one hour
-		#save_players_to_file()
-		#OPTIONAL:
-			#if num_files > 100:
-				#delete oldest file
-	pass
-
-async def save_players_to_file():
-	#TODO:
-	"""
-	Pseudo code:
-	change_file_name("players.json", "players_old_DATEANDTIME.json")
-	f = open("players.json") #file should always be "players.json" or something
-	for each player in players:
-		f.write("START_PLAYER")
-		f.write(player.get_ID)
-		f.write(player.to_dict())
-		f.write("END_PLAYER")
-	f.close()
-	"""
-	pass
-
-async def load_players():
-	#TODO:
-	"""
-	Pseudocode:
-
-	f = open_file(players.json) #doesn't have to be json
-	for entry in f:
-		#entry is the data between start/end player markers
-		id = entry[id]
-		players[id] = Players.from_dict(entry[info])
-	"""
 
 if __name__ == "__main__":
 	#req = requests.get("https://discordapp.com/api/v8/gateway")
