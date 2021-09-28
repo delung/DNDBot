@@ -138,7 +138,7 @@ async def deal_with_audio_message(message: discord.Message):
 	elif message.content.startswith("$skip"):
 		await youtube.skip_item()
 	elif message.content.startswith("$clear"):
-		youtube.clear(message.content[len("$clear"):])
+		await youtube.clear(message.content[len("$clear"):])
 	else:
 		await message.channel.send("bro what happened")
 

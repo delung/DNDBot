@@ -144,7 +144,7 @@ class Youtube():
             return self.voice_client.is_playing() or self.paused
         return False
 
-    def clear(self, rest_of_msg):
+    async def clear(self, rest_of_msg):
         ind_regex = re.compile(r"[0-9]+")
         if rest_of_msg == "":
             #clear everything
