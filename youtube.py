@@ -75,23 +75,26 @@ class Youtube():
         if not self.is_playing():
             if self.voice_client is None:
                 await self.connect_vc(self.voice_channel, self.called_channel)
-            start_time = datetime.now()
+                start_time = datetime.now()
+            while (not self.is_queue_empty()):
+                self.curr_task = asyncio.create_task(self.gen_play_next_in_queue_task())
+                await self.curr_task
+                self._cleanup()
+        else:
+            await self.called_channel.send(embed=self.get_queue())
+            return
+        #Queue is empty, no more songs. Wait until timeout.
+        self.currently_playing = "No song is currently playing."
+        curr_time = datetime.now()
+        time_diff_in_seconds = (curr_time - start_time).seconds
+        num_other_users_in_channel = len(self.voice_channel.members) - 1 #sub. 1 to account for self
+        timeout = ((time_diff_in_seconds > self.vc_timeout) and (num_other_users_in_channel <= 0)) or (time_diff_in_seconds > self.vc_timeout_in_channel)
+        while (not timeout):
+            await asyncio.sleep(5)
             curr_time = datetime.now()
             time_diff_in_seconds = (curr_time - start_time).seconds
             num_other_users_in_channel = len(self.voice_channel.members) - 1 #sub. 1 to account for self
             timeout = ((time_diff_in_seconds > self.vc_timeout) and (num_other_users_in_channel <= 0)) or (time_diff_in_seconds > self.vc_timeout_in_channel)
-            while (not self.is_queue_empty() and not timeout):
-                self.curr_task = asyncio.create_task(self.gen_play_next_in_queue_task())
-                await self.curr_task
-                self._cleanup()
-                curr_time = datetime.now()
-                time_diff_in_seconds = (curr_time - start_time).seconds
-                timeout = ((time_diff_in_seconds > self.vc_timeout) and (num_other_users_in_channel <= 0)) or (time_diff_in_seconds > self.vc_timeout_in_channel)
-                num_other_users_in_channel = len(self.voice_channel.members) - 1 #sub. 1 to account for self
-        else:
-            await self.called_channel.send(embed=self.get_queue())
-            return
-        self.currently_playing = "No song is currently playing."
         return
 
     async def skip_item(self):
