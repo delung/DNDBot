@@ -115,6 +115,8 @@ class Youtube():
         self.cancel_playing()
         self._cleanup()
         await self.disconnect_vc()
+        self.voice_channel = None
+        self.voice_client = None
         return
 
     def pause(self):
