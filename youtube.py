@@ -97,7 +97,7 @@ class Youtube():
             self.cancel_playing()
             await self.play()
         else:
-            self.called_channel.send("No song is currently playing!")
+            await self.called_channel.send("No song is currently playing!")
         return
 
     async def connect_vc(self, vc, text_channel):
