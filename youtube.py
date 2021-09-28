@@ -117,6 +117,9 @@ class Youtube():
         await self.disconnect_vc()
         self.voice_channel = None
         self.voice_client = None
+        self.called_channel = None
+        self.currently_playing = "No song currently playing."
+        self.paused = False
         return
 
     def pause(self):
