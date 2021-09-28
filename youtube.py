@@ -20,6 +20,7 @@ class Youtube():
         self.voice_client = None
         self.voice_channel = None
         self.curr_task = None
+        self.leave_task = None
         self.output_path = "./yt_dls/"
         self.output_name = "curr_song.mp4"
         self.called_channel = None
@@ -78,6 +79,7 @@ class Youtube():
         curr_time = datetime.now()
         time_diff_in_seconds = (curr_time - start_time).seconds
         num_other_users_in_channel = len(self.voice_client.channel.members) - 1 #sub. 1 to account for self
+        print("number of other users in channel is ", num_other_users_in_channel)
         timeout = ((time_diff_in_seconds > self.vc_timeout) and (num_other_users_in_channel <= 0)) or (time_diff_in_seconds > self.vc_timeout_in_channel)
         while (not timeout):
             await asyncio.sleep(5)
@@ -94,12 +96,16 @@ class Youtube():
             if self.voice_client is None:
                 await self.connect_vc(self.voice_channel, self.called_channel)
             start_time = datetime.now()
+            if not self.leave_task is None:
+                self.leave_task.cancel()
+                print("Activity restarted. Canceling waiting.")
             while (not self.is_queue_empty()):
                 self.curr_task = asyncio.create_task(self.gen_play_next_in_queue_task())
                 await self.curr_task
                 self._cleanup()
             print("Queue is done, going to wait mode.")
-            await self._wait_for_disconnect(start_time)
+            self.leave_task = asyncio.create_task(self._wait_for_disconnect(start_time))
+            await self.leave_task
         else:
             await self.called_channel.send(embed=self.get_queue())
         return
