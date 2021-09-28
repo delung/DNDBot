@@ -95,6 +95,7 @@ class Youtube():
             time_diff_in_seconds = (curr_time - start_time).seconds
             num_other_users_in_channel = len(self.voice_channel.members) - 1 #sub. 1 to account for self
             timeout = ((time_diff_in_seconds > self.vc_timeout) and (num_other_users_in_channel <= 0)) or (time_diff_in_seconds > self.vc_timeout_in_channel)
+        await self.stop()
         return
 
     async def skip_item(self):
