@@ -124,9 +124,9 @@ class Youtube():
 
     async def stop(self):
         self.cancel_playing()
+        await self.disconnect_vc()
         self._cleanup()
         await self.clear("all")
-        await self.disconnect_vc()
         self.voice_channel = None
         self.voice_client = None
         self.called_channel = None
