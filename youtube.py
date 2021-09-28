@@ -9,8 +9,8 @@ class Youtube():
 
     EMPTY_QUEUE_EMB = discord.Embed(title="Nothing in the queue")
     NONE_FOUND_EMB = discord.Embed(title="Nothing found by that name")
-    vc_timeout = 10 #5 minutes
-    vc_timeout_in_channel = 10 #15 minutes
+    vc_timeout = 300 #5 minutes
+    vc_timeout_in_channel = 900 #15 minutes
     max_video_length_seconds = 605 #10 minutes
 
     def __init__(self, client):
@@ -85,7 +85,7 @@ class Youtube():
             time_diff_in_seconds = (curr_time - start_time).seconds
             num_other_users_in_channel = len(self.voice_client.channel.members) - 1 #sub. 1 to account for self
             timeout = ((time_diff_in_seconds > self.vc_timeout) and (num_other_users_in_channel <= 0)) or (time_diff_in_seconds > self.vc_timeout_in_channel)
-        print("Time's up, leaving now.")
+        await self.called_channel.send("Leaving due to inactivity.")
         await self.stop()
         return
 
@@ -99,8 +99,7 @@ class Youtube():
                 await self.curr_task
                 self._cleanup()
             print("Queue is done, going to wait mode.")
-            self.curr_task = asyncio.create_task(self._wait_for_disconnect(start_time))
-            await self.curr_task
+            await self._wait_for_disconnect(start_time)
         else:
             await self.called_channel.send(embed=self.get_queue())
         return
@@ -126,6 +125,7 @@ class Youtube():
         return
 
     async def stop(self):
+        print("stop was called")
         self.cancel_playing()
         await self.disconnect_vc()
         self._cleanup()
