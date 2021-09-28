@@ -135,14 +135,17 @@ async def deal_with_audio_message(message: discord.Message):
 	if message.content.startswith("$play"):
 		if not in_vc:
 			await message.channel.send("You must be in a voice channel.")
+			return
 		play_flag = await youtube.add_to_queue(message.content[len("$play"):])
 	elif message.content.startswith("$pause"):
 		if not in_vc:
 			await message.channel.send("You must be in a voice channel.")
+			return
 		youtube.pause()
 	elif message.content.startswith("$resume"):
 		if not in_vc:
 			await message.channel.send("You must be in a voice channel.")
+			return
 		youtube.resume()
 	elif message.content.startswith("$stop"):
 		await youtube.stop()
