@@ -91,7 +91,7 @@ class Youtube():
         if not self.is_playing():
             if self.voice_client is None:
                 await self.connect_vc(self.voice_channel, self.called_channel)
-                start_time = datetime.now()
+            start_time = datetime.now()
             while (not self.is_queue_empty()):
                 self.curr_task = asyncio.create_task(self.gen_play_next_in_queue_task())
                 await self.curr_task

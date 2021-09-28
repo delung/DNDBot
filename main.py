@@ -121,21 +121,28 @@ async def deal_with_player_message(message: discord.Message) -> discord.Embed:
 
 async def deal_with_audio_message(message: discord.Message):
 	#check that user is in vc
+	in_vc = True
 	if message.author.voice is None:
-		await message.channel.send("You are not in a voice channel.")
-		return
-		
-	vc = message.author.voice.channel
+		in_vc = False
+		vc = None
+	else:
+		vc = message.author.voice.channel
 	if youtube.called_channel is None:
 		youtube.called_channel = message.channel
 	if youtube.voice_channel is None:
 		youtube.voice_channel = vc
 	play_flag = False
 	if message.content.startswith("$play"):
+		if not in_vc:
+			await message.channel.send("You must be in a voice channel.")
 		play_flag = await youtube.add_to_queue(message.content[len("$play"):])
 	elif message.content.startswith("$pause"):
+		if not in_vc:
+			await message.channel.send("You must be in a voice channel.")
 		youtube.pause()
 	elif message.content.startswith("$resume"):
+		if not in_vc:
+			await message.channel.send("You must be in a voice channel.")
 		youtube.resume()
 	elif message.content.startswith("$stop"):
 		await youtube.stop()
