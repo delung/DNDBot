@@ -71,18 +71,7 @@ class Youtube():
         self.queue += [yt]
         return True
 
-    async def play(self):
-        if not self.is_playing():
-            if self.voice_client is None:
-                await self.connect_vc(self.voice_channel, self.called_channel)
-                start_time = datetime.now()
-            while (not self.is_queue_empty()):
-                self.curr_task = asyncio.create_task(self.gen_play_next_in_queue_task())
-                await self.curr_task
-                self._cleanup()
-        else:
-            await self.called_channel.send(embed=self.get_queue())
-            return
+    async def _wait_for_disconnect(self, start_time):
         #Queue is empty, no more songs. Wait until timeout.
         self.currently_playing = "No song is currently playing."
         curr_time = datetime.now()
@@ -96,6 +85,20 @@ class Youtube():
             num_other_users_in_channel = len(self.voice_channel.members) - 1 #sub. 1 to account for self
             timeout = ((time_diff_in_seconds > self.vc_timeout) and (num_other_users_in_channel <= 0)) or (time_diff_in_seconds > self.vc_timeout_in_channel)
         await self.stop()
+        return
+
+    async def play(self):
+        if not self.is_playing():
+            if self.voice_client is None:
+                await self.connect_vc(self.voice_channel, self.called_channel)
+                start_time = datetime.now()
+            while (not self.is_queue_empty()):
+                self.curr_task = asyncio.create_task(self.gen_play_next_in_queue_task())
+                await self.curr_task
+                self._cleanup()
+            await self._wait_for_disconnect(start_time)
+        else:
+            await self.called_channel.send(embed=self.get_queue())
         return
 
     async def skip_item(self):
