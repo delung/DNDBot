@@ -96,7 +96,7 @@ class Youtube():
                 self.curr_task = asyncio.create_task(self.gen_play_next_in_queue_task())
                 await self.curr_task
                 self._cleanup()
-            self.curr_task = self._wait_for_disconnect(start_time)
+            self.curr_task = asyncio.create_task(self._wait_for_disconnect(start_time))
             await self.curr_task
         else:
             await self.called_channel.send(embed=self.get_queue())
