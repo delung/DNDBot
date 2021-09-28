@@ -146,12 +146,14 @@ class Youtube():
 
     async def clear(self, rest_of_msg):
         ind_regex = re.compile(r"[0-9]+")
-        if rest_of_msg == "":
+        if rest_of_msg.strip().lower() == "all":
+            print("clearing everything")
             #clear everything
             self.queue = []
         elif not ind_regex.match(rest_of_msg.strip()) is None:
             #should only be one
             ind = int(re.findall(r"[0-9]+", rest_of_msg.strip())[0])
+            print("clearing index: ", str(ind))
             if ind > 0:
                 self.queue.pop(ind-1)
         await self.called_channel.send(embed=self.get_queue())

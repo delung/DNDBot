@@ -53,7 +53,7 @@ async def on_message(message):
 	roll_regex = re.compile(r"\$r |\$r[0-9]|\$roll[0-9]|\$roll|\$roll help")
 	map_regex = re.compile(r"\$map[a-z]+|\$map |\$maphelp|\$mapnew [0-9]+,[0-9]+")
 	player_regex = re.compile(r"\$player new|\$player new example|\$player update_sheet")
-	play_regex = re.compile(r"\$play [a-zA-Z0-9]+|\$queue|\$pause|\$resume|\$clear [0-9]+|\$stop|\$skip")
+	play_regex = re.compile(r"\$play [a-zA-Z0-9]+|\$queue|\$pause|\$resume|\$clear [0-9]+|\$clear all|\$stop|\$skip")
 	# checks if message is from channel
 	if message.channel.type == discord.ChannelType.text:
 		if message.author == client.user:
