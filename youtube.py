@@ -90,6 +90,8 @@ class Youtube():
                 num_other_users_in_channel = len(self.voice_channel.members) - 1 #sub. 1 to account for self
         else:
             await self.called_channel.send(embed=self.get_queue())
+            return
+        self.currently_playing = "No song is currently playing."
         return
 
     async def skip_item(self):
