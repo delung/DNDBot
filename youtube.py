@@ -3,21 +3,27 @@ import discord
 import re
 import asyncio
 import os
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 class Youtube():
 
-    EMPTY_QUEUE_EMB = discord.Embed().title("Nothing in the queue")
-    NONE_FOUND_EMB = discord.Embed().title("Nothing found by that name")
-
+    EMPTY_QUEUE_EMB = discord.Embed(title="Nothing in the queue")
+    NONE_FOUND_EMB = discord.Embed(title="Nothing found by that name")
+    vc_timeout = 300 #5 minutes
+    vc_timeout_in_channel = 900 #15 minutes
+    max_video_length_seconds = 605 #10 minutes
+    
     def __init__(self, client):
         self.currently_playing = "No song currently playing."
         self.queue = []
         self.client = client
         self.voice_client = None
+        self.voice_channel = None
         self.curr_task = None
         self.output_path = "./yt_dls/"
         self.output_name = "curr_song.mp4"
+        self.called_channel = None
+        self.paused = False
 
     @staticmethod
     async def get_help_message(message: discord.Message) -> discord.Embed:
@@ -40,8 +46,9 @@ class Youtube():
         return self.get_queue_size() == 0
 
     async def add_to_queue(self, search_str):
-        #check len > 0
-        #
+        #returns true if added sucessfully
+        if not len(search_str) > 0:
+            await self.called_channel.send("Invalid query")
         def prog_func(stream, chunk, bytes_remaining):
             print("Bytes left: ", bytes_remaining)
             return
@@ -52,38 +59,59 @@ class Youtube():
 
         results = Search(search_str)
         if not len(results.results) > 0:
-            #TODO
             return self.NONE_FOUND_EMB
 
         #grab first result
         yt = results.results[0]
+        if yt.length > self.max_video_length_seconds:
+            await self.called_channel.send("Video is too long. Max is 10 minutes.")
+            return False
         yt.register_on_progress_callback(prog_func)
         yt.register_on_complete_callback(done_func)
         self.queue += [yt]
+        return True
+
+    async def play(self):
+        if not self.is_playing():
+            if self.voice_client is None:
+                await self.connect_vc(self.voice_channel, self.called_channel)
+            start_time = datetime.now()
+            curr_time = datetime.now()
+            time_diff_in_seconds = (curr_time - start_time).seconds
+            num_other_users_in_channel = len(self.voice_channel.members) - 1 #sub. 1 to account for self
+            timeout = ((time_diff_in_seconds > self.vc_timeout) and (num_other_users_in_channel <= 0)) or (time_diff_in_seconds > self.vc_timeout_in_channel)
+            while (not self.is_queue_empty() and not timeout):
+                self.curr_task = asyncio.create_task(self.gen_play_next_in_queue_task())
+                await self.curr_task
+                self._cleanup()
+                curr_time = datetime.now()
+                time_diff_in_seconds = (curr_time - start_time).seconds
+                timeout = ((time_diff_in_seconds > self.vc_timeout) and (num_other_users_in_channel <= 0)) or (time_diff_in_seconds > self.vc_timeout_in_channel)
+                num_other_users_in_channel = len(self.voice_channel.members) - 1 #sub. 1 to account for self
+        else:
+            await self.called_channel.send(embed=self.get_queue())
         return
 
-    async def play_next(self):
-        self.curr_task = self.gen_play_next_in_queue_task()
-        await self.curr_task
-        self._cleanup()
-        return
-
-    def skip_item(self):
-        self.cancel_playing()
-        self.play_next()
+    async def skip_item(self):
+        if self.is_playing():
+            self.cancel_playing()
+            await self.play()
+        else:
+            self.called_channel.send("No song is currently playing!")
         return
 
     async def connect_vc(self, vc, text_channel):
-        if not self.voice_client is None:
+        if not self.voice_client is None and vc != self.voice_channel:
             await text_channel.send("I can only be in one voice channel at a time!")
         self.voice_client = await vc.connect()
+        self.voice_channel = vc
         return
 
     async def disconnect_vc(self):
         await self.voice_client.disconnect()
         return
 
-    def stop(self):
+    async def stop(self):
         self.cancel_playing()
         self._cleanup()
         await self.disconnect_vc()
@@ -91,12 +119,17 @@ class Youtube():
 
     def pause(self):
         if self.is_playing():
+            print("pausing...")
             self.voice_client.pause()
+            print("paused")
+            self.paused = True
         return
 
     def resume(self):
-        if not self.is_playing():
-            self.voice_client.resume()
+        print("resuming...")
+        self.voice_client.resume()
+        print("resumed")
+        self.paused = False
         return
 
     def cancel_playing(self):
@@ -108,15 +141,16 @@ class Youtube():
 
     def is_playing(self):
         if not self.voice_client is None:
-            return self.voice_client.is_playing()
+            return self.voice_client.is_playing() or self.paused
         return False
 
     def clear(self, rest_of_msg):
         ind_regex = re.compile(r"[0-9]+")
         if not ind_regex.match(rest_of_msg.strip()) is None:
             #should only be one
-            ind = re.findall(r"[0-9]+", rest_of_msg.strip())[0]
-            self.queue.pop(ind)
+            ind = int(re.findall(r"[0-9]+", rest_of_msg.strip())[0])
+            if ind > 0:
+                self.queue.pop(ind-1)
         else:
             #clear everything
             self.queue = []
@@ -148,10 +182,12 @@ class Youtube():
         return emb
 
     async def _download_video_for_play(self, queue_index):
+        await self.called_channel.send("Downloading next song... Can't respond until after.")
         if self.is_queue_empty():
             return self.EMPTY_QUEUE_EMB
         yt = self.queue.pop(queue_index)
         self.currently_playing = str(yt.title)
+        await self.called_channel.send(embed=self.get_queue())
         audio_streams = yt.streams.filter(only_audio=True)
         #grab first audio-only stream and download
         if not len(audio_streams) > 0:
@@ -165,7 +201,7 @@ class Youtube():
             print("ERROR, AUDIO FILE NOT FOUND AT ", file_loc)
         src = discord.FFmpegPCMAudio(file_loc)
         self.voice_client.play(src, after=lambda e: print("Finished song"))
-        while self.voice_client.is_playing():
+        while self.is_playing():
             await asyncio.sleep(1)
         self.voice_client.stop()
         return

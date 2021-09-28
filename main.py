@@ -122,60 +122,29 @@ async def deal_with_player_message(message: discord.Message) -> discord.Embed:
 async def deal_with_audio_message(message: discord.Message):
 	#check that user is in vc
 	vc = message.author.voice.channel
-	state = 0
-	vc_timeout = 300 #5 minutes
-	vc_timeout_in_channel = 900 #15 minutes
-	num_other_users_in_channel = len(vc.members)
-	start_time = vc_timeout_in_channel
+	youtube.called_channel = message.channel
+	youtube.voice_channel = vc
+	play_flag = False
 	if message.content.startswith("$play"):
-		await youtube.add_to_queue(message.content[len("$play"):])
-		await youtube.connect_vc(vc, message.channel)
-		youtube.stop()
-		start_time = datetime.now()
-		state = 2
+		play_flag = await youtube.add_to_queue(message.content[len("$play"):])
 	elif message.content.startswith("$pause"):
-		if state == 2:
-			youtube.pause()
-			state = 1
+		youtube.pause()
 	elif message.content.startswith("$resume"):
-		if state == 1:
-			youtube.resume()
-			state = 2
+		youtube.resume()
 	elif message.content.startswith("$stop"):
-		state = 0
-		youtube.cancel_playing()
-		await youtube.disconnect_vc()
+		await youtube.stop()
 	elif message.content.startswith("$queue"):
 		await message.channel.send(embed=youtube.get_queue())
 	elif message.content.startswith("$skip"):
-		if state == 2:
-			youtube.skip_item()
-			await message.channel.send(embed=youtube.get_queue())
-		else:
-			await message.channel.send("No song currently playing.")
-			pass
+		await youtube.skip_item()
 	elif message.content.startswith("$clear"):
 		youtube.clear(message.content[len("$clear"):])
 		await message.channel.send(embed=youtube.get_queue())
-		state = 1
 	else:
 		await message.channel.send("bro what happened")
-
-	if state == 2:
-		curr_time = datetime.now()
-		time_diff_in_seconds = (curr_time - start_time).seconds
-		timeout = ((time_diff_in_seconds > vc_timeout) and (num_other_users_in_channel <= 0)) or (time_diff_in_seconds > vc_timeout_in_channel)
-		num_other_users_in_channel = len(vc.members) - 1 #sub. 1 to account for self
-		while (not youtube.is_queue_empty() and not timeout):
-			await youtube.play_next()
-			await message.channel.send(embed=youtube.get_queue())
-
-			curr_time = datetime.now()
-			time_diff_in_seconds = (curr_time - start_time).seconds
-			timeout = ((time_diff_in_seconds > vc_timeout) and (num_other_users_in_channel <= 0)) or (time_diff_in_seconds > vc_timeout_in_channel)
-			num_other_users_in_channel = len(vc.members) - 1 #sub. 1 to account for self
-	else:
-		await message.channel.send("bro how did this happen")
+	
+	if play_flag:
+		await youtube.play()
 	return
 
 async def create_backups():
