@@ -3,11 +3,12 @@ import discord
 import re
 import asyncio
 import os
+from datetime import timedelta
 
 class Youtube():
 
     def __init__(self, client):
-        self.currently_playing = ""
+        self.currently_playing = "No song currently playing."
         self.queue = []
         self.client = client
 
@@ -54,19 +55,25 @@ class Youtube():
 
     def skip_item(self):
         self.queue.pop(0)
+        #run cleanup
         return
 
     def get_queue(self):
         emb = discord.Embed()
         emb.title = "Song Player Queue"
         emb.type = "rich"
-        indicies = ''.join([str(i) + ".\n" for i in range(len(self.queue))])
-        titles = ''.join([yt.title + "\n" for yt in self.queue])
-        lengths = ''.join([yt.length + ".\n" for i in self.queue])
+        if not self.is_queue_empty():
+            indices = ''.join([str(i+1) + ".\n" for i in range(len(self.queue))])
+            titles = ''.join([str(yt.title) + "\n" for yt in self.queue])
+            lengths = ''.join([str(timedelta(seconds=yt.length)) + "\n" for yt in self.queue])
+        else:
+            indices = "0."
+            titles = "No songs in queue."
+            lengths = "0:00:00"
         emb.add_field(name="Index", value=indices, inline=True)
         emb.add_field(name="Song Title", value=titles, inline=True)
         emb.add_field(name="Length", value=lengths, inline=True)
-        emb.add_field(name="Now Playing", value = self.currently_playing, inline=False)
+        emb.add_field(name="Now Playing", value=self.currently_playing, inline=False)
         emb.colour = discord.Colour.dark_red()
         return emb
 
@@ -74,24 +81,27 @@ class Youtube():
         if self.is_queue_empty():
             return self.EMPTY_QUEUE_EMB
         yt = self.queue.pop(queue_index)
-        self.currently_playing = yt.title
+        self.currently_playing = str(yt.title)
         audio_streams = yt.streams.filter(only_audio=True)
         #grab first audio-only stream and download
         if not len(audio_streams) > 0:
             raise IndexError("No audio streams available.")
-        path = audio_streams[0].download(output_path="./yt_dls/", filename="curr_song")
+        path = audio_streams[0].download(output_path="./yt_dls/", filename="curr_song.mp4")
         return path
 
+    
+
     async def gen_play_next_in_queue_task(self):
-        try:
-            file_loc = self._download_video_for_play(0)
-            if not os.path.exists(file_loc):
-                print("ERROR, AUDIO FILE NOT FOUND AT ", file_loc)
-            file = open(file_loc, "r")
-            src = discord.PCMAudio(file)
-            self.VoiceClient.play(src, after=lambda x: print("finished playing song"))
-        except Error as e:
-            raise Error(e)
-            file.close()
-        file.close()
+        def cleanup_song(error):
+            if os.path.exists(file_loc):
+                os.remove(file_loc)
+                
+        file_loc = await self._download_video_for_play(0)
+        if not os.path.exists(file_loc):
+            print("ERROR, AUDIO FILE NOT FOUND AT ", file_loc)
+        src = discord.FFmpegPCMAudio(file_loc)
+        self.client.voice_clients[0].play(src, after=cleanup_song)
+        while self.client.voice_clients[0].is_playing():
+            await asyncio.sleep(1)
+        self.client.voice_clients[0].stop()
         return
