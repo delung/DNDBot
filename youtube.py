@@ -104,6 +104,7 @@ class Youtube():
     async def skip_item(self):
         if self.is_playing():
             self.cancel_playing()
+            self.paused = False
             await self.play()
         else:
             await self.called_channel.send("No song is currently playing!")
