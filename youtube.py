@@ -78,14 +78,14 @@ class Youtube():
         self.currently_playing = "No song is currently playing."
         curr_time = datetime.now()
         time_diff_in_seconds = (curr_time - start_time).seconds
-        num_other_users_in_channel = len(self.voice_client.channel.members) - 1 #sub. 1 to account for self
+        num_other_users_in_channel = len(self.voice_channel.members) - 1 #sub. 1 to account for self
         print("number of other users in channel is ", num_other_users_in_channel)
         timeout = ((time_diff_in_seconds > self.vc_timeout) and (num_other_users_in_channel <= 0)) or (time_diff_in_seconds > self.vc_timeout_in_channel)
         while (not timeout):
             await asyncio.sleep(5)
             curr_time = datetime.now()
             time_diff_in_seconds = (curr_time - start_time).seconds
-            num_other_users_in_channel = len(self.voice_client.channel.members) - 1 #sub. 1 to account for self
+            num_other_users_in_channel = len(self.voice_channel.members) - 1 #sub. 1 to account for self
             timeout = ((time_diff_in_seconds > self.vc_timeout) and (num_other_users_in_channel <= 0)) or (time_diff_in_seconds > self.vc_timeout_in_channel)
         await self.called_channel.send("Leaving due to inactivity.")
         await self.stop()
