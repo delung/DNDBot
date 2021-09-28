@@ -12,7 +12,7 @@ class Youtube():
     vc_timeout = 300 #5 minutes
     vc_timeout_in_channel = 900 #15 minutes
     max_video_length_seconds = 605 #10 minutes
-    
+
     def __init__(self, client):
         self.currently_playing = "No song currently playing."
         self.queue = []
@@ -146,14 +146,15 @@ class Youtube():
 
     def clear(self, rest_of_msg):
         ind_regex = re.compile(r"[0-9]+")
-        if not ind_regex.match(rest_of_msg.strip()) is None:
+        if rest_of_msg == "":
+            #clear everything
+            self.queue = []
+        elif not ind_regex.match(rest_of_msg.strip()) is None:
             #should only be one
             ind = int(re.findall(r"[0-9]+", rest_of_msg.strip())[0])
             if ind > 0:
                 self.queue.pop(ind-1)
-        else:
-            #clear everything
-            self.queue = []
+        await self.called_channel.send(embed=self.get_queue())
         return
 
     def _cleanup(self):

@@ -139,10 +139,9 @@ async def deal_with_audio_message(message: discord.Message):
 		await youtube.skip_item()
 	elif message.content.startswith("$clear"):
 		youtube.clear(message.content[len("$clear"):])
-		await message.channel.send(embed=youtube.get_queue())
 	else:
 		await message.channel.send("bro what happened")
-	
+
 	if play_flag:
 		await youtube.play()
 	return
